@@ -1,0 +1,112 @@
+module elevator_tb;
+
+    // Parameters
+    localparam N = 5; // Number of floors
+    localparam board_freq = 10; // Freq of FPGA
+    localparam module_freq = 1; // Freq of Module
+    localparam door_open_time = 10; // Door open time in clock cycles
+
+    // Inputs
+    reg [N:1] request_up_button;
+    reg [N:1] request_down_button;
+    reg close_button;
+    reg open_button;
+    reg [N:1] input_floor_button;
+    reg board_clk;
+
+    // Outputs
+    wire door_led;
+    wire go_up_led;
+    wire go_down_led;
+    wire [N:1] led_up;
+    wire [N:1] led_down;
+    wire seg_a, seg_b, seg_c, seg_d, seg_e, seg_f, seg_g;
+
+    // Instantiate the Unit Under Test (UUT)
+    elevator_module #(
+        .N(N),
+        .board_freq(board_freq),
+        .module_freq(module_freq),
+        .door_open_time(door_open_time)
+    ) uut (
+        .request_up_button(request_up_button),
+        .request_down_button(request_down_button),
+        .close_button(close_button),
+        .open_button(open_button),
+        .input_floor_button(input_floor_button),
+        .board_clk(board_clk),
+        .door_led(door_led),
+        .go_up_led(go_up_led),
+        .go_down_led(go_down_led),
+        .led_up(led_up),
+        .led_down(led_down),
+        .seg_a(seg_a),
+        .seg_b(seg_b),
+        .seg_c(seg_c),
+        .seg_d(seg_d),
+        .seg_e(seg_e),
+        .seg_f(seg_f),
+        .seg_g(seg_g)
+    );
+
+    // Generate clock
+    initial begin
+        board_clk = 0;
+    end
+         always #5 board_clk = ~board_clk; // 100 MHz clock (10 ns period)
+
+    // Stimulus logic
+    initial begin
+        // Initialize Inputs
+        request_up_button = 0;
+        request_down_button = 0;
+        close_button = 0;
+        open_button = 0;
+        input_floor_button = 1;
+
+        // Wait 100 ns for global reset to finish
+        #100;
+
+        // Test case 1: Press button to go to floor 3 from floor 1
+        input_floor_button[3] = 1;
+        #20;
+        input_floor_button[3] = 0;
+
+        // Wait for elevator to reach floor 3
+        #200;
+
+        // Test case 2: Request up from floor 2
+        request_up_button[2] = 1;
+        #20;
+        request_up_button[2] = 0;
+
+        // Wait for elevator to process request
+        #200;
+
+        // Test case 3: Request down from floor 4
+        request_down_button[4] = 1;
+        #20;
+        request_down_button[4] = 0;
+
+        // Wait for elevator to process request
+        #200;
+
+        // Test case 4: Open and close the door
+        open_button = 1;
+        #20;
+        open_button = 0;
+        #100;
+        close_button = 1;
+        #20;
+        close_button = 0;
+
+        // Finish simulation after some time
+         #500 $finish;
+    end
+
+    // Monitor outputs
+    initial begin
+        $monitor("Time = %0d, Floor = %b, Door = %b, Up LED = %b, Down LED = %b, seg_a = %b",
+            $time, uut.current_floor, door_led, go_up_led, go_down_led, seg_a);
+    end
+endmodule
