@@ -1,0 +1,27 @@
+module module_freq_module        #(parameter board_freq = 10,
+                                    module_freq = 1) //Duty  = 50%
+                          // Board_freq is the Frequency of the Board, In this code the
+                          // Frequency of Module is 1Hz
+                        (input pulse,
+                        output reg clk);
+    
+    reg [3:0] freq_counter;
+    initial begin
+      freq_counter = 0;
+    clk = 0;
+    end
+    
+    always @(posedge pulse)
+    begin 
+        if (freq_counter == (board_freq/module_freq) / 2) //Frequency of module is 1Hz
+        begin
+            clk <= ~clk;
+            freq_counter <= 0;
+        end
+        else  freq_counter <= freq_counter + 1;
+    end
+
+    
+
+
+endmodule
