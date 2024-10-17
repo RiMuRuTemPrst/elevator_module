@@ -1,3 +1,4 @@
+
 // DE2 -- 115
 module elevator_module
   #(parameter N = 5, //Number of floors
@@ -108,7 +109,7 @@ module elevator_module
         current_floor <= next_floor;
     end
 
-    //Handle
+    //Save the Request 
     always @(posedge clk) begin
     for (i = 1; i < N + 1; i = i + 1) begin
         if (input_floor_button[i] == 1)
@@ -125,8 +126,8 @@ module elevator_module
             request_down_reg[i] = 1;
         else if (next_floor == i)
             request_down_reg[i] = 0;
+        end
     end
-end
 
 // Handle Request
 always @(*) begin 
